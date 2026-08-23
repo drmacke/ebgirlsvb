@@ -1,16 +1,5 @@
 export default async function decorate(block) {
-  // The block should contain the URL to your DA.live sheet.
-  // Example authored content:
-  //
-  // | Schedule URL |
-  // | https://content.da.live/myorg/mysite/volleyball-schedule.json |
-  //
-  const source = block.querySelector('a')?.href || block.textContent.trim();
-
-  if (!source) {
-    block.textContent = 'Schedule data source not configured.';
-    return;
-  }
+  const source = 'https://main--ebgirlsvb--drmacke.aem.live/schedule.json';
 
   try {
     const response = await fetch(source);
@@ -20,24 +9,20 @@ export default async function decorate(block) {
     }
 
     const json = await response.json();
+    const games = json.data || [];
 
-    // DA.live sheets are generally returned with the rows in `data`.
-    const rows = json.data || [];
+    block.innerHTML = '';
 
-    if (!rows.length) {
+    if (!games.length) {
       block.innerHTML = '<p class="schedule-empty">No games scheduled.</p>';
       return;
     }
 
-    // Clear the authored block content.
-    block.innerHTML = '';
-
     const schedule = document.createElement('div');
     schedule.className = 'schedule-list';
 
-    rows.forEach((game) => {
-      const card = renderGame(game);
-      schedule.append(card);
+    games.forEach((game) => {
+      schedule.append(renderGame(game));
     });
 
     block.append(schedule);
@@ -52,56 +37,31 @@ export default async function decorate(block) {
   }
 }
 
-/**
- * Render one game.
- *
- * Expected sheet columns:
- * Date
- * Opponent
- * Location
- * JV Time
- * Varsity Time
- * JV Set 1
- * JV Set 2
- * JV Set 3
- * JV Set 4
- * JV Set 5
- * Varsity Set 1
- * Varsity Set 2
- * Varsity Set 3
- * Varsity Set 4
- * Varsity Set 5
- *
- * Each set should contain the score like:
- * 25-18
- */
-
 function renderGame(game) {
   const card = document.createElement('article');
   card.className = 'schedule-game';
 
-  const date = game.Date || game.date || '';
-  const opponent = game.Opponent || game.opponent || '';
-  const location = game.Location || game.location || '';
-  const jvTime = game['JV Time'] || game.jvTime || '';
-  const varsityTime = game['Varsity Time'] || game.varsityTime || '';
+  const date = game.Date || '';
+  const opponent = game.Opponent || '';
+  const location = game.Location || '';
+  const jvTime = game['JV time'] || '';
+  const varsityTime = game['Varsity Time'] || '';
 
   const jvSets = getSets(game, 'JV');
-  const varsitySets = getSets(game, 'Varsity');
+  const varsitySets = getSets(game, 'V');
 
   const jvResult = calculateResult(jvSets);
   const varsityResult = calculateResult(varsitySets);
 
   card.innerHTML = `
     <div class="schedule-date">
-      ${escapeHtml(date)}
+      ${escapeHtml(formatDate(date))}
     </div>
 
     <div class="schedule-opponent">
       <span class="schedule-home-away">
         ${escapeHtml(location)}
       </span>
-
       <h3>${escapeHtml(opponent)}</h3>
     </div>
 
@@ -115,14 +75,12 @@ function renderGame(game) {
 }
 
 function renderGameLevel(level, time, sets, result) {
-  // No score yet.
   if (!sets.length) {
     return `
       <div class="schedule-row">
         <div class="schedule-team">
           ${level}
         </div>
-
         <div class="schedule-time">
           ${escapeHtml(time)}
         </div>
@@ -134,12 +92,14 @@ function renderGameLevel(level, time, sets, result) {
     .map((set) => escapeHtml(set))
     .join(' · ');
 
+  const resultClass = result.startsWith('W') ? 'w' : 'l';
+
   return `
     <div class="schedule-row schedule-final">
       <div class="schedule-team">
         <strong>${level}</strong>
-        <span class="schedule-result ${result.toLowerCase()}">
-          ${result}
+        <span class="schedule-result ${resultClass}">
+          ${escapeHtml(result)}
         </span>
       </div>
 
@@ -154,12 +114,13 @@ function getSets(game, level) {
   const sets = [];
 
   for (let i = 1; i <= 5; i += 1) {
-    const key = `${level} Set ${i}`;
+    let value = '';
 
-    const value =
-      game[key] ??
-      game[`${level.toLowerCase()}Set${i}`] ??
-      '';
+    if (level === 'JV') {
+      value = game[`JV Set ${i}`] || '';
+    } else {
+      value = game[`V Set ${i}`] || '';
+    }
 
     if (String(value).trim()) {
       sets.push(String(value).trim());
@@ -169,17 +130,6 @@ function getSets(game, level) {
   return sets;
 }
 
-/**
- * Takes scores such as:
- *
- * 25-18
- * 20-25
- * 25-17
- * 22-25
- * 15-12
- *
- * and determines W/L.
- */
 function calculateResult(sets) {
   if (!sets.length) {
     return '';
@@ -214,6 +164,20 @@ function calculateResult(sets) {
   }
 
   return '';
+}
+
+function formatDate(dateString) {
+  const date = new Date(`${dateString}T12:00:00`);
+
+  if (Number.isNaN(date.getTime())) {
+    return dateString;
+  }
+
+  return date.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  });
 }
 
 function escapeHtml(value) {
