@@ -1,0 +1,163 @@
+.schedule {
+  --schedule-border: #ddd;
+  --schedule-muted: #666;
+  --schedule-background: #fff;
+  --schedule-win: #16794b;
+  --schedule-loss: #c9252d;
+
+  width: 100%;
+}
+
+.schedule .schedule-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  width: 100%;
+  border-top: 1px solid var(--schedule-border);
+}
+
+/* Individual match */
+
+.schedule .schedule-game {
+  display: grid;
+  grid-template-columns: 140px minmax(180px, 1fr) 2fr;
+  gap: 24px;
+  align-items: center;
+  padding: 24px 8px;
+  border-bottom: 1px solid var(--schedule-border);
+  background: var(--schedule-background);
+}
+
+/* Date */
+
+.schedule .schedule-date {
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+/* Opponent */
+
+.schedule .schedule-opponent h3 {
+  margin: 3px 0 0;
+  font-size: 20px;
+  line-height: 1.2;
+}
+
+.schedule .schedule-home-away {
+  display: block;
+  color: var(--schedule-muted);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* JV / Varsity area */
+
+.schedule .schedule-level {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.schedule .schedule-row {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 16px;
+  align-items: center;
+}
+
+.schedule .schedule-team {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.schedule .schedule-time {
+  font-size: 15px;
+}
+
+/* Completed matches */
+
+.schedule .schedule-score {
+  color: var(--schedule-muted);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.schedule .schedule-result {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3px 7px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.schedule .schedule-result.w {
+  color: var(--schedule-win);
+}
+
+.schedule .schedule-result.l {
+  color: var(--schedule-loss);
+}
+
+/* Empty / error states */
+
+.schedule .schedule-empty,
+.schedule .schedule-error {
+  padding: 24px 0;
+  color: var(--schedule-muted);
+}
+
+.schedule .schedule-error {
+  color: var(--schedule-loss);
+}
+
+/* Tablet */
+
+@media (width < 900px) {
+  .schedule .schedule-game {
+    grid-template-columns: 110px minmax(150px, 1fr) 2fr;
+    gap: 16px;
+  }
+}
+
+/* Mobile */
+
+@media (width < 600px) {
+  .schedule .schedule-game {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    padding: 20px 4px;
+  }
+
+  .schedule .schedule-date {
+    font-size: 14px;
+  }
+
+  .schedule .schedule-opponent h3 {
+    font-size: 20px;
+  }
+
+  .schedule .schedule-level {
+    margin-top: 4px;
+    padding-top: 12px;
+    border-top: 1px solid var(--schedule-border);
+  }
+
+  .schedule .schedule-row {
+    grid-template-columns: 90px 1fr;
+    gap: 12px;
+  }
+
+  .schedule .schedule-score {
+    font-size: 13px;
+  }
+}
